@@ -7,6 +7,6 @@ const CONFIG = {
     },
     server: {
         // URL de tu backend o Google Apps Script
-        endpoint: 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec '
+        endpoint: 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec '
     }
-};  
+};
