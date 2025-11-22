@@ -170,13 +170,7 @@ function completePurchase() {
     // Obtener método de pago
     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
     
-    // Si el método es PayPal, usar el botón de PayPal
-    if (paymentMethod === 'paypal') {
-        alert('Por favor, utiliza el botón de PayPal para completar tu compra de forma segura.');
-        return;
-    }
-    
-    // Para otros métodos de pago, procesar manualmente
+    // Simular procesamiento
     const btn = document.querySelector('.btn-purchase');
     const originalText = btn.textContent;
     btn.textContent = 'Procesando...';
@@ -184,6 +178,7 @@ function completePurchase() {
     
     // Simular delay de procesamiento
     setTimeout(() => {
+        // Aquí iría la integración real con el sistema de pagos
         console.log('Compra procesada:', {
             vip: currentVIP,
             steamId,

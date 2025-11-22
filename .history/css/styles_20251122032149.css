@@ -463,28 +463,6 @@ body::before {
     font-size: 1.2rem;
 }
 
-/* PayPal Button Container */
-#paypal-button-container {
-    margin: 20px 0;
-    min-height: 55px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* Asegurar que el botón de PayPal se vea bien */
-.paypal-buttons {
-    border-radius: 8px !important;
-}
-
-/* Ocultar botón de compra cuando PayPal está activo */
-.payment-method input[value="paypal"]:checked ~ .order-summary .btn-purchase {
-    display: none;
-}
-
-.payment-method input[value="paypal"]:checked ~ .order-summary #paypal-button-container {
-    display: block;
-}
-
 /* Modal */
 .modal {
     display: none;
@@ -591,9 +569,5 @@ body::before {
         margin-bottom: 20px;
         display: block;
         width: fit-content;
-    }
-    
-    #paypal-button-container {
-        margin: 15px 0;
     }
 }
