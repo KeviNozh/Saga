@@ -1,3 +1,5 @@
+// script.js - VERSIÓN CORREGIDA CON PAYPAL
+
 // Datos de los VIP
 const vipData = {
     vip: {
@@ -77,6 +79,8 @@ function showVIPDetails(vipType) {
     currentVIP = vipType;
     const vip = vipData[vipType];
     
+    console.log('📋 Mostrando detalles de:', vipType);
+    
     // Actualizar contenido
     document.getElementById('vip-title').textContent = vip.title;
     document.getElementById('vip-title').style.color = vip.color;
@@ -110,18 +114,51 @@ function showVIPDetails(vipType) {
 
 // Mostrar checkout
 function showCheckout() {
-    if (!currentVIP) return;
+    if (!currentVIP) {
+        console.error('❌ No hay VIP seleccionado');
+        alert('Error: No se ha seleccionado ningún VIP');
+        return;
+    }
+    
+    console.log('💳 Mostrando checkout para:', currentVIP);
     
     const vip = vipData[currentVIP];
     document.getElementById('summary-product').textContent = vip.title;
     document.getElementById('summary-price').textContent = vip.price;
     document.getElementById('summary-total').textContent = vip.price;
     
+    // Cambiar a página de checkout
     showPage('checkout-page');
+    
+    // CRÍTICO: Inicializar PayPal después de mostrar la página
+    setTimeout(() => {
+        console.log('🔄 Inicializando botón de PayPal...');
+        
+        // Verificar que la función existe
+        if (typeof initializePayPal === 'function') {
+            initializePayPal(currentVIP);
+        } else {
+            console.error('❌ ERROR: initializePayPal no está definida');
+            console.log('Verifica que paypal.js se haya cargado correctamente');
+            
+            // Mostrar error al usuario
+            const container = document.getElementById('paypal-button-container');
+            if (container) {
+                container.innerHTML = `
+                    <div style="background: #ff5252; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <strong>⚠️ Error al cargar PayPal</strong><br>
+                        Por favor recarga la página e intenta nuevamente.<br>
+                        Si el problema persiste, contacta soporte.
+                    </div>
+                `;
+            }
+        }
+    }, 300); // Pequeño delay para asegurar que el DOM está listo
 }
 
 // Volver a la página principal
 function showMainPage() {
+    console.log('🏠 Volviendo a página principal');
     showPage('main-page');
     currentVIP = null;
 }
@@ -129,6 +166,7 @@ function showMainPage() {
 // Volver a detalles desde checkout
 function showVIPDetailsBack() {
     if (currentVIP) {
+        console.log('⬅️ Volviendo a detalles de:', currentVIP);
         showPage('vip-details');
     } else {
         showMainPage();
@@ -137,54 +175,77 @@ function showVIPDetailsBack() {
 
 // Cambiar entre páginas
 function showPage(pageId) {
+    console.log('📄 Cambiando a página:', pageId);
+    
     // Ocultar todas las páginas
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
     
     // Mostrar página seleccionada
-    document.getElementById(pageId).classList.add('active');
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    } else {
+        console.error('❌ Página no encontrada:', pageId);
+    }
     
     // Scroll al inicio
-    window.scrollTo(0, 0);
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
-// Completar compra
+// Completar compra (para métodos que NO sean PayPal)
 function completePurchase() {
+    console.log('🔄 Intentando completar compra...');
+    
     // Validar formulario
-    const steamId = document.getElementById('steam-id').value;
-    const email = document.getElementById('email').value;
-    const name = document.getElementById('name').value;
+    const steamId = document.getElementById('steam-id').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const name = document.getElementById('name').value.trim();
     const terms = document.getElementById('terms').checked;
     
     if (!steamId || !email || !name) {
-        alert('Por favor, completa todos los campos obligatorios.');
+        alert('❌ Por favor, completa todos los campos obligatorios.');
         return;
     }
     
     if (!terms) {
-        alert('Debes aceptar los términos y condiciones.');
+        alert('❌ Debes aceptar los términos y condiciones.');
         return;
     }
     
     // Obtener método de pago
     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
     
-    // Si el método es PayPal, usar el botón de PayPal
+    // Si el método es PayPal, redirigir al botón
     if (paymentMethod === 'paypal') {
-        alert('Por favor, utiliza el botón de PayPal para completar tu compra de forma segura.');
+        alert('⚠️ Por favor, utiliza el botón amarillo de PayPal arriba para completar tu compra de forma segura.');
+        
+        // Hacer scroll al botón de PayPal
+        const paypalContainer = document.getElementById('paypal-button-container');
+        if (paypalContainer) {
+            paypalContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Resaltar el botón
+            paypalContainer.style.animation = 'pulse 1s ease-in-out 3';
+        }
         return;
     }
     
-    // Para otros métodos de pago, procesar manualmente
+    // Para otros métodos de pago (tarjeta, crypto)
     const btn = document.querySelector('.btn-purchase');
     const originalText = btn.textContent;
     btn.textContent = 'Procesando...';
     btn.disabled = true;
     
+    console.log('💳 Procesando compra con método:', paymentMethod);
+    
     // Simular delay de procesamiento
     setTimeout(() => {
-        console.log('Compra procesada:', {
+        console.log('✅ Compra procesada (simulada):', {
             vip: currentVIP,
             steamId,
             email,
@@ -192,25 +253,23 @@ function completePurchase() {
             paymentMethod
         });
         
-        // Mostrar modal de éxito
-        showConfirmation();
+        alert('⚠️ Este método de pago aún no está disponible.\n\nPor favor usa PayPal para completar tu compra.');
         
         // Resetear botón
         btn.textContent = originalText;
         btn.disabled = false;
-        
-        // Limpiar formulario
-        document.getElementById('billing-form').reset();
     }, 2000);
 }
 
 // Mostrar confirmación
 function showConfirmation() {
+    console.log('✅ Mostrando confirmación de compra');
     document.getElementById('confirmation-modal').classList.add('active');
 }
 
 // Cerrar modal
 function closeModal() {
+    console.log('❌ Cerrando modal');
     document.getElementById('confirmation-modal').classList.remove('active');
     showMainPage();
 }
@@ -230,6 +289,16 @@ function adjustColor(color, percent) {
 
 // Efectos visuales adicionales
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('%c🎮 SAGA RUST VIP SYSTEM', 'background: #d85c3a; color: white; font-size: 18px; padding: 10px; font-weight: bold;');
+    console.log('✅ Frontend cargado correctamente');
+    
+    // Verificar que PayPal SDK está cargado
+    if (typeof paypal !== 'undefined') {
+        console.log('✅ PayPal SDK cargado');
+    } else {
+        console.warn('⚠️ PayPal SDK no detectado (se cargará cuando sea necesario)');
+    }
+    
     // Animación de entrada para las cards
     const cards = document.querySelectorAll('.vip-card');
     cards.forEach((card, index) => {
@@ -237,20 +306,36 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.transform = 'translateY(30px)';
         
         setTimeout(() => {
-            card.style.transition = 'all 0.5s ease';
+            card.style.transition = 'all 0.6s ease';
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
-        }, index * 150);
+        }, index * 200 + 300);
     });
     
     // Partículas de fondo (opcional)
     createParticles();
+    
+    // Agregar animación de pulso para botones PayPal
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.7);
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 20px 10px rgba(255, 140, 0, 0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
 });
 
 // Crear efecto de partículas sutiles
 function createParticles() {
     const container = document.body;
-    const particleCount = 20;
+    const particleCount = 15;
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -264,7 +349,7 @@ function createParticles() {
         
         const x = Math.random() * window.innerWidth;
         const y = Math.random() * window.innerHeight;
-        const duration = 10 + Math.random() * 20;
+        const duration = 15 + Math.random() * 15;
         
         particle.style.left = x + 'px';
         particle.style.top = y + 'px';
@@ -284,7 +369,7 @@ function animateParticle(particle, duration) {
         const progress = (timestamp - start) / (duration * 1000);
         
         if (progress < 1) {
-            particle.style.top = (startY - progress * 100) + 'px';
+            particle.style.top = (startY - progress * 150) + 'px';
             particle.style.opacity = 1 - progress;
             requestAnimationFrame(animate);
         } else {
@@ -303,5 +388,16 @@ document.addEventListener('click', (e) => {
     const modal = document.getElementById('confirmation-modal');
     if (e.target === modal) {
         closeModal();
+    }
+});
+
+// Prevenir envío del formulario con Enter
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('billing-form');
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('⚠️ Formulario submit bloqueado - usa el botón de PayPal');
+        });
     }
 });
