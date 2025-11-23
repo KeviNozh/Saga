@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+// Configuración de la aplicación - PRODUCCIÓN
+const CONFIG = {
+    paypal: {
+        clientId: '<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -293,4 +296,18 @@
         });
     </script>
 </body>
-</html>
+</html>',
+        currency: 'USD',
+        environment: 'production'
+    },
+    server: {
+        endpoint: 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec'
+    },
+    pricing: {
+        vip: 0.10,
+        gold: 0.10,
+        diamond: 0.10
+    }
+};
+
+console.log('⚙️ CONFIG cargado - PRODUCCIÓN - $0.10 USD');
