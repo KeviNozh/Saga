@@ -39,10 +39,6 @@
                         <div class="form-group">
                             <label for="discord">Discord (Opcional)</label>
                             <input type="text" id="discord" placeholder="Solo tu nombre de usuario (ej: miusuario)">
-                            <div id="discord-help" style="display: none; font-size: 0.8rem; color: #ffa500; margin-top: 5px; padding: 8px; background: rgba(255,165,0,0.1); border-radius: 5px; border-left: 3px solid #ffa500;">
-                                <strong>💡 Importante:</strong> Solo tu nombre de usuario<br>
-                                <small>Ejemplo: "juanplayer" en lugar de "juanplayer#1234"</small>
-                            </div>
                         </div>
 
                         <div class="form-group checkbox-group">
@@ -108,61 +104,9 @@
     <script src="js/paypal.js"></script>
     
     <script>
-        // Validación en tiempo real del campo Discord
-        function setupDiscordValidation() {
-            const discordInput = document.getElementById('discord');
-            const discordHelp = document.getElementById('discord-help');
-            
-            if (discordInput && discordHelp) {
-                // Mostrar ayuda inicial
-                discordHelp.style.display = 'block';
-                
-                discordInput.addEventListener('input', function(e) {
-                    // Remover automáticamente cualquier # y números después
-                    let value = e.target.value;
-                    if (value.includes('#')) {
-                        value = value.split('#')[0];
-                        e.target.value = value;
-                    }
-                    
-                    // Mostrar ayuda visual actualizada
-                    if (value.length > 0) {
-                        discordHelp.innerHTML = `
-                            <strong>✅ Formato correcto</strong><br>
-                            El sistema buscará: <strong>${value}</strong><br>
-                            <small>⚠️ Solo ingresa tu nombre de usuario, sin #1234</small>
-                        `;
-                        discordHelp.style.background = 'rgba(76, 175, 80, 0.1)';
-                        discordHelp.style.borderLeftColor = '#4CAF50';
-                        discordHelp.style.color = '#4CAF50';
-                    } else {
-                        discordHelp.innerHTML = `
-                            <strong>💡 Importante:</strong> Solo tu nombre de usuario<br>
-                            <small>Ejemplo: "juanplayer" en lugar de "juanplayer#1234"</small>
-                        `;
-                        discordHelp.style.background = 'rgba(255,165,0,0.1)';
-                        discordHelp.style.borderLeftColor = '#ffa500';
-                        discordHelp.style.color = '#ffa500';
-                    }
-                });
-                
-                // También validar al enfocar/desenfocar
-                discordInput.addEventListener('focus', function() {
-                    discordHelp.style.display = 'block';
-                });
-                
-                discordInput.addEventListener('blur', function() {
-                    if (this.value === '') {
-                        discordHelp.style.display = 'block';
-                    }
-                });
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             console.log('📄 Checkout PRODUCCIÓN - $0.10 USD');
             loadCheckoutSummary();
-            setupDiscordValidation();
             
             let intentos = 0;
             const maxIntentos = 50;
@@ -192,64 +136,6 @@
                     `;
                 }
             }, 100);
-        });
-
-        // Función para verificar usuario Discord en tiempo real
-        function verificarDiscordEnServidor() {
-            const discordInput = document.getElementById('discord');
-            const discordValue = discordInput.value.trim();
-            
-            if (discordValue === '') return;
-            
-            // Limpiar el valor (remover # si lo ingresaron)
-            const cleanDiscord = discordValue.split('#')[0].trim();
-            if (cleanDiscord !== discordValue) {
-                discordInput.value = cleanDiscord;
-            }
-            
-            // Mostrar mensaje de verificación
-            const statusElement = document.getElementById('payment-status');
-            if (statusElement) {
-                statusElement.style.display = 'block';
-                statusElement.style.background = 'rgba(255, 165, 0, 0.2)';
-                statusElement.style.border = '2px solid #ffa500';
-                statusElement.style.color = '#ffa500';
-                statusElement.innerHTML = `<strong>🔍 Verificando usuario Discord: ${cleanDiscord}</strong>`;
-            }
-            
-            // Simular verificación (en un sistema real aquí harías una llamada API)
-            setTimeout(() => {
-                if (statusElement) {
-                    statusElement.innerHTML = `
-                        <strong>✅ Usuario listo para asignación</strong><br>
-                        <small>El sistema buscará: <strong>${cleanDiscord}</strong> en el servidor</small>
-                    `;
-                    statusElement.style.background = 'rgba(76, 175, 80, 0.2)';
-                    statusElement.style.border = '2px solid #4CAF50';
-                    statusElement.style.color = '#4CAF50';
-                    
-                    // Ocultar después de 5 segundos
-                    setTimeout(() => {
-                        statusElement.style.display = 'none';
-                    }, 5000);
-                }
-            }, 1000);
-        }
-
-        // Agregar evento para verificar cuando el usuario termine de escribir
-        document.addEventListener('DOMContentLoaded', function() {
-            const discordInput = document.getElementById('discord');
-            if (discordInput) {
-                let timeoutId;
-                discordInput.addEventListener('input', function() {
-                    clearTimeout(timeoutId);
-                    timeoutId = setTimeout(() => {
-                        if (this.value.length > 2) {
-                            verificarDiscordEnServidor();
-                        }
-                    }, 1000);
-                });
-            }
         });
     </script>
 </body>
