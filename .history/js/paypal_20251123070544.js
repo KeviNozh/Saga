@@ -1,5 +1,5 @@
 let currentVIP = null;
-let externalValidator = null; // 🔒 Variable para guardar la validación de Discord
+let externalValidator = null
 
 // ✅ URL de tu Google Apps Script
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec';
@@ -11,12 +11,9 @@ const vipConfig = {
     diamond: { price: 0.10, name: 'VIP DIAMOND' }
 };
 
-// Modificamos la función para aceptar el validador (validatorFunction)
-function initializePayPal(vipType, validatorFunction = null) {
+function initializePayPal(vipType) {
     console.log('🔄 Inicializando PayPal PRODUCCIÓN para:', vipType);
     currentVIP = vipType;
-    externalValidator = validatorFunction; // 🔒 Guardamos la función de validación
-    
     const config = vipConfig[vipType];
     
     if (!config) {
@@ -57,13 +54,6 @@ function initializePayPal(vipType, validatorFunction = null) {
         createOrder: function(data, actions) {
             console.log('📝 Creando orden de pago REAL - $' + price.toFixed(2));
             
-            // 🔒 1. EJECUTAMOS LA VALIDACIÓN DE DISCORD AQUÍ
-            if (externalValidator && !externalValidator()) {
-                // Si la validación de Discord falla, detenemos todo silenciosamente
-                // (El HTML ya mostró el error visualmente)
-                return Promise.reject(new Error('Validación de Discord fallida'));
-            }
-
             if (!validateFormSilent()) {
                 showPaymentStatus('⚠️ Completa todos los campos obligatorios', 'warning');
                 return Promise.reject(new Error('Formulario incompleto'));
@@ -89,11 +79,8 @@ function initializePayPal(vipType, validatorFunction = null) {
                 console.log('✅ Orden REAL creada:', orderId);
                 return orderId;
             }).catch(function(error) {
-                // Ignoramos errores de validación intencionales
-                if (error.message !== 'Validación de Discord fallida') {
-                    console.error('❌ Error al crear orden:', error);
-                    showPaymentStatus('Error al crear la orden. Intenta nuevamente.', 'error');
-                }
+                console.error('❌ Error al crear orden:', error);
+                showPaymentStatus('Error al crear la orden. Intenta nuevamente.', 'error');
                 throw error;
             });
         },
@@ -129,11 +116,6 @@ function initializePayPal(vipType, validatorFunction = null) {
         },
 
         onClick: function(data, actions) {
-            // 🔒 2. TAMBIÉN VALIDAMOS AL HACER CLICK
-            if (externalValidator && !externalValidator()) {
-                return actions.reject();
-            }
-
             if (!validateFormSilent()) {
                 showPaymentStatus('⚠️ Completa: Steam ID, Email, Nombre y acepta términos', 'warning');
                 return actions.reject();
@@ -170,43 +152,28 @@ function validateFormSilent() {
 }
 
 function saveFormData() {
-    // Intentamos recuperar el ID de Discord verificado desde las variables globales del HTML
-    let verifiedDiscordId = 'N/A';
-    if (typeof window.discordDataGuardada !== 'undefined' && window.discordDataGuardada) {
-        verifiedDiscordId = window.discordDataGuardada.discordId;
-    }
-
     const formData = {
         steamId: document.getElementById('steam-id').value.trim(),
         email: document.getElementById('email').value.trim(),
         name: document.getElementById('name').value.trim(),
         discord: document.getElementById('discord').value.trim() || 'N/A',
-        discordId: verifiedDiscordId, // 🔑 IMPORTANTE: Guardamos el ID real para el rol
         vipType: currentVIP,
         timestamp: new Date().toISOString()
     };
     localStorage.setItem('sagaRustFormData', JSON.stringify(formData));
-    console.log('💾 Datos del formulario guardados (con Discord ID):', verifiedDiscordId);
+    console.log('💾 Datos del formulario guardados');
 }
 
 async function processSuccessfulPayment(details, vipType) {
     const savedData = JSON.parse(localStorage.getItem('sagaRustFormData') || '{}');
     
-    // Aseguramiento extra del Discord ID
-    let finalDiscordId = savedData.discordId;
-    if ((!finalDiscordId || finalDiscordId === 'N/A') && typeof window.discordDataGuardada !== 'undefined' && window.discordDataGuardada) {
-        finalDiscordId = window.discordDataGuardada.discordId;
-    }
-
     const paymentData = {
-        action: 'procesarPago', // Identificador para Apps Script
         vipType: vipType,
         vipTitle: vipConfig[vipType].name,
         steamId: savedData.steamId,
         email: savedData.email,
         name: savedData.name,
         discord: savedData.discord,
-        discordId: finalDiscordId, // Enviamos el ID verificado al backend
         paypalOrderId: details.id,
         transactionId: details.purchase_units[0].payments.captures[0].id,
         amount: details.purchase_units[0].amount.value,
@@ -228,20 +195,11 @@ async function processSuccessfulPayment(details, vipType) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(paymentData),
-            // mode: 'no-cors' // ⚠️ IMPORTANTE: Intentamos CORS normal para leer la respuesta del rol
+            mode: 'no-cors'
         });
         console.log('✅ Datos enviados al servidor');
     } catch (error) {
-        console.error('⚠️ Error al enviar datos (posible bloqueo CORS, pero enviado):', error);
-        // Intentar fallback con no-cors si falla
-        try {
-             await fetch(BACKEND_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' }, // text/plain evita preflight
-                body: JSON.stringify(paymentData),
-                mode: 'no-cors'
-            });
-        } catch (e) { console.error('Fallo total envío', e); }
+        console.error('⚠️ Error al enviar datos:', error);
     }
 
     hideLoadingModal();
@@ -267,7 +225,6 @@ function showCustomConfirmation(p) {
         <div style="text-align:left;background:rgba(255,255,255,0.1);padding:20px;border-radius:8px;margin:20px 0;">
             <p style="margin:8px 0;"><strong>Steam ID:</strong> ${p.steamId}</p>
             <p style="margin:8px 0;"><strong>Email:</strong> ${p.email}</p>
-            <p style="margin:8px 0;"><strong>Discord:</strong> ${p.discord} ${p.discordId !== 'N/A' ? '✅' : ''}</p>
             <p style="margin:8px 0;"><strong>Transacción:</strong> ${p.transactionId}</p>
             <p style="margin:8px 0;"><strong>Monto:</strong> $${p.amount} ${p.currency}</p>
         </div>
