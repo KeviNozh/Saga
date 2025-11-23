@@ -1,0 +1,39 @@
+Debes de ingresar tus propios id cliente (live, no el sandbox, la diferencia de estos es que e live realiza una venta, el sandbox es para realizar prueba) esto de saca en el el PayPal de empresa 
+
+El script.google.com esta puesto pero se debe de ingresar uno que se crea la persona que lea esto, luego copiar lo entregado y luego "crear un nuevo despliegue", colocar tu correo y también colocar para cualquier persona, luego te paso un link que seria el endpoint.
+
+
+Cambiar la dirección de app script que se crea, luego cambiar la dirección de PayPal que seria lo anterior del id cliente
+
+En checkbout.html seria esto, lo separe y hay se debe de cambiar
+<!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id= Ae4y8pskNsADzerR0UEcN5WccZnZpzNGUwdMYG-IubRQqYqhQnW37l36trhr4nZ9Zv9PFYXdxTfh4a9p &currency=USD&intent=capture&disable-funding=credit,card"></script>
+    
+    <script>
+        // Configuración
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/ AKfycbwndsJpm3xCyhkWlAyugC2_J0DHq9KxxXKHY2H-97qtAYzzwJT5wDoeK_4GxDzbA4WOoA /exec';
+
+
+Cambiar el config.js la id de cliente se cambia igual.
+
+const CONFIG = {
+    paypal: {
+        clientId: ' Ae4y8pskNsADzerR0UEcN5WccZnZpzNGUwdMYG-IubRQqYqhQnW37l36trhr4nZ9Zv9PFYXdxTfh4a9p ',
+        currency: 'USD',
+        environment: ' production '
+    },
+    server: {
+        endpoint: ' https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec '
+    },
+    pricing: {
+        vip: 0.10,
+        gold: 0.10,
+        diamond: 0.10
+    }
+};
+
+console.log('⚙️ CONFIG cargado - PRODUCCIÓN - $0.10 USD');
+
+En PayPal.js sale el link que se debe de crear anteriormente
+
+const BACKEND_URL = ' https://script.google.com/macros/s/AKfycbwndsJpm3xCyhkWlAyugC2_J0DHq9KxxXKHY2H-97qtAYzzwJT5wDoeK_4GxDzbA4WOoA/exec ';
