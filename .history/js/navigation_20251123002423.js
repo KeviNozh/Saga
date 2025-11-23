@@ -4,7 +4,7 @@ const vipData = {
     vip: {
         title: 'VIP (Básico)',
         price: '$0.99',
-        priceValue: 0.99,
+        priceValue: 19.99,
         color: '#8b3a9f',
         benefits: [
             'Puedes guardar más puntos de casa con /sethome',
@@ -48,7 +48,7 @@ const vipData = {
     },
     diamond: {
         title: 'VIP DIAMOND',
-        price: '$0.99',
+        price: '$79.99',
         priceValue: 79.99,
         color: '#00bcd4',
         benefits: [
