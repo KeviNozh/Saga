@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Saga Rust</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="https://imgur.com/ySZ0dgo.png">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="imagen/logo.png" alt="Saga Logo" class="logo">
+            <button class="back-btn" onclick="goToDetails()">← Volver</button>
+        </div>
+
+        <div class="checkout-content">
+            <h2>Facturación</h2>
+            
+            <div class="checkout-grid">
+                <div class="checkout-form">
+                    <h3>Información de Contacto</h3>
+                    <div id="billing-form">
+                        <div class="form-group">
+                            <label for="steam-id">Steam ID *</label>
+                            <input type="text" id="steam-id" required placeholder="Tu Steam ID (ej: 76561198xxxxx)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico *</label>
+                            <input type="email" id="email" required placeholder="tu@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">Nombre Completo *</label>
+                            <input type="text" id="name" required placeholder="Juan Pérez">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="discord">Discord (Opcional)</label>
+                            <input type="text" id="discord" placeholder="Usuario#1234">
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="terms" required>
+                                Acepto los términos y condiciones
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <h3>Resumen del Pedido</h3>
+                    <div class="summary-item">
+                        <span>Producto:</span>
+                        <span id="summary-product">VIP</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Precio:</span>
+                        <span id="summary-price">$0.10</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Impuestos:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item summary-total">
+                        <span>Total:</span>
+                        <span id="summary-total">$0.10</span>
+                    </div>
+
+                    <!-- Contenedor PayPal -->
+                    <div id="paypal-button-container"></div>
+                    
+                    <!-- Mensaje de estado -->
+                    <div id="payment-status" style="display:none; padding: 15px; border-radius: 8px; margin-top: 15px;"></div>
+
+                    <div class="secure-notice">
+                        <span>🔒</span> Pago seguro con PayPal
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="success-icon">✓</span>
+            <h2>¡Compra Exitosa!</h2>
+            <p>Tu rango VIP ha sido activado correctamente.</p>
+            <p>Recibirás un correo de confirmación en breve.</p>
+            <button class="btn" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/navigation.js"></script>
+    <script src="js/script.js"></script>
+    
+    <!-- ✅ PayPal SDK PRODUCCIÓN - Client ID LIVE -->
+    <script src="https://www.paypal.com/sdk/js?client-id=
+AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture&disable-funding=credit,card"></script>
+    <script src="js/paypal.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 Checkout PRODUCCIÓN - $0.10 USD');
+            loadCheckoutSummary();
+            
+            let intentos = 0;
+            const maxIntentos = 50;
+            
+            const checkPayPal = setInterval(() => {
+                intentos++;
+                
+                if (typeof paypal !== 'undefined') {
+                    clearInterval(checkPayPal);
+                    const vipType = sessionStorage.getItem('selectedVIP');
+                    
+                    if (vipType) {
+                        console.log('✅ PayPal SDK LIVE listo:', vipType);
+                        initializePayPal(vipType);
+                    } else {
+                        console.warn('⚠️ No hay VIP seleccionado');
+                        window.location.href = 'index.html';
+                    }
+                } else if (intentos >= maxIntentos) {
+                    clearInterval(checkPayPal);
+                    document.getElementById('paypal-button-container').innerHTML = `
+                        <div style="color: #ff6b6b; padding: 20px; background: rgba(255,0,0,0.1); border-radius: 8px; text-align: center;">
+                            <p><strong>⚠️ Error al cargar PayPal</strong></p>
+                            <p>Verifica tu conexión a internet</p>
+                            <button onclick="location.reload()" class="btn" style="margin-top: 10px;">Recargar Página</button>
+                        </div>
+                    `;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
