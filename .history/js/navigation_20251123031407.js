@@ -48,7 +48,7 @@ const vipData = {
     },
     diamond: {
         title: 'VIP DIAMOND',
-        price: '$0.00',
+        price: '$0.88',
         priceValue: 0.00,
         color: '#00bcd4',
         benefits: [
