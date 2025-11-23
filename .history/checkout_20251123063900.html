@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Saga Rust</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="https://imgur.com/ySZ0dgo.png">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="imagen/logo.png" alt="Saga Logo" class="logo">
+            <button class="back-btn" onclick="goToDetails()">← Volver</button>
+        </div>
+
+        <div class="checkout-content">
+            <h2>Facturación</h2>
+            
+            <div class="checkout-grid">
+                <div class="checkout-form">
+                    <h3>Información de Contacto</h3>
+                    <div id="billing-form">
+                        <div class="form-group">
+                            <label for="steam-id">Steam ID *</label>
+                            <input type="text" id="steam-id" required placeholder="76561198xxxxx">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico *</label>
+                            <input type="email" id="email" required placeholder="tu@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">Nombre Completo *</label>
+                            <input type="text" id="name" required placeholder="Juan Pérez">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="discord">Discord Username * <span style="color: #ff8c00; font-size: 0.85rem;">(sin #)</span></label>
+                            <input type="text" id="discord" required placeholder="tunombre" maxlength="32">
+                            <div id="discord-status" style="margin-top: 8px; font-size: 0.9rem; min-height: 20px;"></div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="terms" required>
+                                Acepto los términos y condiciones
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <h3>Resumen del Pedido</h3>
+                    <div class="summary-item">
+                        <span>Producto:</span>
+                        <span id="summary-product">VIP</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Precio:</span>
+                        <span id="summary-price">$0.10</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Impuestos:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item summary-total">
+                        <span>Total:</span>
+                        <span id="summary-total">$0.10</span>
+                    </div>
+
+                    <div id="paypal-button-container"></div>
+                    <div id="payment-status" style="display:none; padding: 15px; border-radius: 8px; margin-top: 15px;"></div>
+
+                    <div class="secure-notice">
+                        <span>🔒</span> Pago seguro con PayPal
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="success-icon">✓</span>
+            <h2>¡Compra Exitosa!</h2>
+            <p>Tu rango VIP ha sido activado correctamente.</p>
+            <p>Recibirás un correo de confirmación en breve.</p>
+            <button class="btn" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script src="js/navigation.js"></script>
+    <script src="js/script.js"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture&disable-funding=credit,card"></script>
+    <script src="js/paypal.js"></script>
+    
+    <script>
+        // ⚠️ IMPORTANTE: Actualiza con tu URL de Apps Script desplegado
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjYY5oMycB4U6FalwJJBUOgRjaoxP5ww2ieGn6wNJeJXlfqsTbxIYyCW9i2ae-67DEAQ/exec';
+
+        // Variables globales
+        let discordVerificado = false;
+        let discordDataGuardada = null;
+
+        // ========================================
+        // VERIFICAR DISCORD
+        // ========================================
+        async function verificarDiscord(username) {
+            const statusDiv = document.getElementById('discord-status');
+            
+            if (!username || username.trim() === '') {
+                statusDiv.innerHTML = '';
+                discordVerificado = false;
+                discordDataGuardada = null;
+                return false;
+            }
+            
+            const cleanUsername = username.split('#')[0].trim();
+            
+            if (cleanUsername.length < 2) {
+                statusDiv.innerHTML = '<span style="color: #aaa;">Mínimo 2 caracteres</span>';
+                discordVerificado = false;
+                return false;
+            }
+            
+            statusDiv.innerHTML = '<span style="color: orange;">🔍 Buscando en servidor...</span>';
+            
+            try {
+                console.log('📡 Verificando:', cleanUsername);
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'verificarDiscord',
+                        discordUser: cleanUsername
+                    }),
+                    redirect: 'follow'
+                });
+                
+                console.log('📡 Status:', response.status);
+                
+                const text = await response.text();
+                console.log('📡 Respuesta raw:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error('❌ Error parseando:', text);
+                    statusDiv.innerHTML = '<span style="color: red;">⚠️ Error del servidor</span>';
+                    discordVerificado = false;
+                    return false;
+                }
+                
+                console.log('✅ Resultado:', result);
+                
+                if (result.success) {
+                    statusDiv.innerHTML = `<span style="color: #4CAF50;">✅ ${result.message}</span>`;
+                    
+                    // Guardar datos verificados
+                    discordVerificado = true;
+                    discordDataGuardada = {
+                        discordId: result.discordId,
+                        discordName: result.discordName,
+                        discordTag: result.discordTag
+                    };
+                    
+                    console.log('✅ Discord verificado:', discordDataGuardada);
+                    return true;
+                } else {
+                    statusDiv.innerHTML = `<span style="color: #ff6b6b;">❌ ${result.error}</span>`;
+                    discordVerificado = false;
+                    discordDataGuardada = null;
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                statusDiv.innerHTML = '<span style="color: red;">⚠️ Error de conexión</span>';
+                discordVerificado = false;
+                discordDataGuardada = null;
+                return false;
+            }
+        }
+
+        // ========================================
+        // CONFIGURAR VALIDACIÓN EN TIEMPO REAL
+        // ========================================
+        function setupDiscordValidation() {
+            const input = document.getElementById('discord');
+            let timeout = null;
+            
+            input.addEventListener('input', function(e) {
+                let value = e.target.value;
+                
+                // Remover # automáticamente
+                if (value.includes('#')) {
+                    value = value.split('#')[0];
+                    e.target.value = value;
+                }
+                
+                // Limpiar timeout anterior
+                clearTimeout(timeout);
+                
+                // Verificar después de 1.5 segundos de no escribir
+                if (value.length >= 2) {
+                    timeout = setTimeout(() => {
+                        verificarDiscord(value);
+                    }, 1500);
+                } else {
+                    const statusDiv = document.getElementById('discord-status');
+                    statusDiv.innerHTML = '';
+                    discordVerificado = false;
+                }
+            });
+            
+            // Verificar al perder foco
+            input.addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (value.length >= 2) {
+                    verificarDiscord(value);
+                }
+            });
+        }
+
+        // ========================================
+        // VALIDAR ANTES DEL PAGO
+        // ========================================
+        function validarAntesDePago() {
+            console.log('🔍 Validando formulario...');
+            console.log('   Discord verificado:', discordVerificado);
+            console.log('   Discord data:', discordDataGuardada);
+            
+            if (!discordVerificado || !discordDataGuardada) {
+                alert('❌ Primero verifica que tu usuario de Discord esté en el servidor');
+                document.getElementById('discord').focus();
+                return false;
+            }
+            
+            const steamId = document.getElementById('steam-id').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const terms = document.getElementById('terms').checked;
+            
+            if (!steamId || !email || !name) {
+                alert('❌ Completa todos los campos obligatorios');
+                return false;
+            }
+            
+            if (!terms) {
+                alert('❌ Debes aceptar los términos y condiciones');
+                return false;
+            }
+            
+            console.log('✅ Validación OK');
+            return true;
+        }
+
+        // ========================================
+        // ENVIAR DATOS DEL PAGO
+        // ========================================
+        async function enviarDatosPago(formData) {
+            try {
+                console.log('📤 Enviando pago:', formData);
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData),
+                    redirect: 'follow'
+                });
+                
+                const text = await response.text();
+                console.log('📡 Respuesta:', text);
+                
+                const result = JSON.parse(text);
+                console.log('✅ Resultado:', result);
+                
+                if (result.success) {
+                    const statusDiv = document.getElementById('payment-status');
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.background = 'rgba(76, 175, 80, 0.2)';
+                    statusDiv.style.border = '2px solid #4CAF50';
+                    statusDiv.style.color = '#4CAF50';
+                    statusDiv.innerHTML = `
+                        <strong>✅ ¡Pago exitoso!</strong><br>
+                        <small>Rol Discord: ${result.discordStatus === 'ROL_ASIGNADO' ? '✅ Asignado' : '⏳ Procesando'}</small>
+                    `;
+                    
+                    setTimeout(() => {
+                        document.getElementById('confirmation-modal').classList.add('active');
+                    }, 1500);
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                const statusDiv = document.getElementById('payment-status');
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = 'rgba(255, 0, 0, 0.2)';
+                statusDiv.style.border = '2px solid #ff0000';
+                statusDiv.style.color = '#ff0000';
+                statusDiv.innerHTML = `<strong>❌ Error:</strong><br><small>${error.message}</small>`;
+            }
+        }
+
+        // ========================================
+        // FUNCIÓN AUXILIAR
+        // ========================================
+        function getVIPPrice(vipType) {
+            return '0.10';
+        }
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 Checkout DEFINITIVO cargado');
+            console.log('🔗 URL:', APPS_SCRIPT_URL);
+            
+            loadCheckoutSummary();
+            setupDiscordValidation();
+            
+            let intentos = 0;
+            const checkPayPal = setInterval(() => {
+                intentos++;
+                
+                if (typeof paypal !== 'undefined') {
+                    clearInterval(checkPayPal);
+                    const vipType = sessionStorage.getItem('selectedVIP');
+                    
+                    if (!vipType) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    console.log('✅ PayPal listo:', vipType);
+                    
+                    paypal.Buttons({
+                        style: {
+                            shape: 'rect',
+                            color: 'gold',
+                            layout: 'vertical',
+                            label: 'paypal'
+                        },
+                        
+                        createOrder: function(data, actions) {
+                            if (!validarAntesDePago()) {
+                                return Promise.reject();
+                            }
+                            
+                            const amount = getVIPPrice(vipType);
+                            console.log('💰 Creando orden:', amount);
+                            
+                            return actions.order.create({
+                                purchase_units: [{
+                                    amount: {
+                                        value: amount,
+                                        currency_code: 'USD'
+                                    },
+                                    description: `${vipType.toUpperCase()} - Saga Rust`
+                                }]
+                            });
+                        },
+                        
+                        onApprove: function(data, actions) {
+                            console.log('✅ Pago aprobado');
+                            
+                            const statusDiv = document.getElementById('payment-status');
+                            statusDiv.style.display = 'block';
+                            statusDiv.style.background = 'rgba(255, 165, 0, 0.2)';
+                            statusDiv.style.border = '2px solid #ffa500';
+                            statusDiv.style.color = '#ffa500';
+                            statusDiv.innerHTML = '<strong>🔄 Procesando...</strong>';
+                            
+                            return actions.order.capture().then(function(orderData) {
+                                console.log('🎉 Captura exitosa');
+                                
+                                const formData = {
+                                    steamId: document.getElementById('steam-id').value.trim(),
+                                    email: document.getElementById('email').value.trim(),
+                                    name: document.getElementById('name').value.trim(),
+                                    discord: document.getElementById('discord').value.trim(),
+                                    discordId: discordDataGuardada.discordId,
+                                    vipType: vipType,
+                                    vipTitle: vipType.toUpperCase(),
+                                    transactionId: data.orderID,
+                                    paypalOrderId: orderData.id,
+                                    amount: getVIPPrice(vipType),
+                                    status: 'COMPLETED',
+                                    payerEmail: orderData.payer.email_address,
+                                    payerName: orderData.payer.name.given_name + ' ' + (orderData.payer.name.surname || '')
+                                };
+                                
+                                return enviarDatosPago(formData);
+                            });
+                        },
+                        
+                        onError: function(err) {
+                            console.error('❌ Error PayPal:', err);
+                            alert('❌ Error en el pago');
+                        },
+                        
+                        onCancel: function() {
+                            console.log('🚫 Pago cancelado');
+                        }
+                        
+                    }).render('#paypal-button-container');
+                    
+                } else if (intentos >= 50) {
+                    clearInterval(checkPayPal);
+                    document.getElementById('paypal-button-container').innerHTML = `
+                        <div style="color: #ff6b6b; padding: 20px; background: rgba(255,0,0,0.1); border-radius: 8px; text-align: center;">
+                            <p><strong>⚠️ Error al cargar PayPal</strong></p>
+                            <button onclick="location.reload()" class="btn">Recargar</button>
+                        </div>
+                    `;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
