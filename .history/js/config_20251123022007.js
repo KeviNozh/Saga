@@ -3,7 +3,7 @@ const CONFIG = {
     paypal: {
         clientId: 'AdmOZ1pU4Ci3l2bd9ILYMqaDmPCl2Bn2ARAYAo5ytIxT4oC06VAo52-A8h2Wz2_IJ3OeIK3psKsIceov',
         currency: 'USD',
-        environment: 'production' // Cambiar a 'production' cuando esté listo
+        environment: 'sandbox' // Cambiar a 'production' cuando esté listo
     },
     server: {
         // URL de tu backend o Google Apps Script
