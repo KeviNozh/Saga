@@ -3,7 +3,7 @@
 const vipData = {
     vip: {
         title: 'VIP (Básico)',
-        price: '$0.88',
+        price: '$0.99',
         priceValue: 0.88,
         color: '#8b3a9f',
         benefits: [
@@ -24,8 +24,8 @@ const vipData = {
     },
     gold: {
         title: 'VIP GOLD',
-        price: '$0.88',
-        priceValue: 0.88,
+        price: '$0.99',
+        priceValue: 0.99,
         color: '#ff8c00',
         benefits: [
             'Todo lo del VIP, pero mejorado',
@@ -48,8 +48,8 @@ const vipData = {
     },
     diamond: {
         title: 'VIP DIAMOND',
-        price: '$0.88',
-        priceValue: 0.88,
+        price: '$0.99',
+        priceValue: 0.99,
         color: '#00bcd4',
         benefits: [
             'Todo lo del VIP GOLD',

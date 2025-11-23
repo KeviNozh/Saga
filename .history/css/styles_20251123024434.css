@@ -1,0 +1,653 @@
+/* Reset y Variables */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --purple: #8b3a9f;
+    --gold: #ff8c00;
+    --diamond: #00bcd4;
+    --dark-bg: rgba(0, 0, 0, 0.7);
+    --rust-orange: #d85c3a;
+    --rust-metal: #6b5c52;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('../imagen/final.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+/* Contenedor Principal */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.logo {
+    max-width: 300px;
+    height: auto;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.5));
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
+    color: #fff;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 50px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Navegación */
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-5px);
+}
+
+/* Cards Container */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+/* VIP Cards */
+.vip-card {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border-top: 4px solid;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.vip-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+}
+
+.vip-purple {
+    border-color: var(--purple);
+}
+
+.vip-purple:hover {
+    box-shadow: 0 15px 40px rgba(139, 58, 159, 0.4);
+}
+
+.vip-gold {
+    border-color: var(--gold);
+}
+
+.vip-gold:hover {
+    box-shadow: 0 15px 40px rgba(255, 140, 0, 0.4);
+}
+
+.vip-diamond {
+    border-color: var(--diamond);
+}
+
+.vip-diamond:hover {
+    box-shadow: 0 15px 40px rgba(0, 188, 212, 0.4);
+}
+
+.card-header h3 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.vip-purple .card-header h3 {
+    color: var(--purple);
+}
+
+.vip-gold .card-header h3 {
+    color: var(--gold);
+}
+
+.vip-diamond .card-header h3 {
+    color: var(--diamond);
+}
+
+.card-price {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #fff;
+}
+
+.currency {
+    font-size: 2rem;
+}
+
+.benefits-list {
+    list-style: none;
+    text-align: left;
+    margin: 30px 0;
+    padding: 0;
+}
+
+.benefits-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1rem;
+    color: #ddd;
+}
+
+.benefits-list li:last-child {
+    border-bottom: none;
+}
+
+/* Buttons */
+.btn {
+    padding: 15px 40px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.btn-purple {
+    background: linear-gradient(135deg, var(--purple), #a64db8);
+}
+
+.btn-purple:hover {
+    background: linear-gradient(135deg, #a64db8, var(--purple));
+    box-shadow: 0 5px 20px rgba(139, 58, 159, 0.5);
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, var(--gold), #ffa500);
+}
+
+.btn-gold:hover {
+    background: linear-gradient(135deg, #ffa500, var(--gold));
+    box-shadow: 0 5px 20px rgba(255, 140, 0, 0.5);
+}
+
+.btn-diamond {
+    background: linear-gradient(135deg, var(--diamond), #26c6da);
+}
+
+.btn-diamond:hover {
+    background: linear-gradient(135deg, #26c6da, var(--diamond));
+    box-shadow: 0 5px 20px rgba(0, 188, 212, 0.5);
+}
+
+.btn-large {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.3rem;
+    margin-top: 30px;
+}
+
+.btn-purchase {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.btn-purchase:hover {
+    background: linear-gradient(135deg, #45a049, #4CAF50);
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.5);
+}
+
+/* Páginas */
+.page {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Detalles VIP */
+.details-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(30, 30, 30, 0.9);
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+}
+
+#vip-title {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.details-price {
+    text-align: center;
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #fff;
+}
+
+.details-section {
+    margin: 30px 0;
+}
+
+.details-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 10px;
+}
+
+.benefits-detail-list,
+.features-list {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits-detail-list li,
+.features-list li {
+    padding: 12px 0;
+    padding-left: 30px;
+    position: relative;
+    color: #ddd;
+    font-size: 1.1rem;
+}
+
+.benefits-detail-list li::before,
+.features-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+/* Checkout */
+.checkout-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.checkout-content h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--gold);
+}
+
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.checkout-form,
+.order-summary {
+    background: rgba(30, 30, 30, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+}
+
+.checkout-form h3,
+.order-summary h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ddd;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.payment-method:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: var(--gold);
+}
+
+.payment-method input[type="radio"] {
+    margin-right: 10px;
+}
+
+.payment-method span {
+    font-size: 1.1rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+/* Order Summary */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    color: #ddd;
+}
+
+.summary-divider {
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    margin: 15px 0;
+}
+
+.summary-total {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.secure-notice {
+    text-align: center;
+    margin-top: 20px;
+    color: #4CAF50;
+    font-size: 0.9rem;
+}
+
+.secure-notice span {
+    font-size: 1.2rem;
+}
+
+/* PayPal Button Container */
+#paypal-button-container {
+    margin: 20px 0;
+    min-height: 55px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Asegurar que el botón de PayPal se vea bien */
+.paypal-buttons {
+    border-radius: 8px !important;
+}
+
+/* Ocultar botón de compra cuando PayPal está activo */
+.payment-method input[value="paypal"]:checked ~ .order-summary .btn-purchase {
+    display: none;
+}
+
+.payment-method input[value="paypal"]:checked ~ .order-summary #paypal-button-container {
+    display: block;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: rgba(30, 30, 30, 0.95);
+    padding: 50px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 500px;
+    border: 3px solid var(--gold);
+    animation: scaleIn 0.3s;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #fff;
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: var(--gold);
+}
+
+.modal-content p {
+    margin: 10px 0;
+    color: #ddd;
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .subtitle {
+        font-size: 1.3rem;
+    }
+    
+    .logo {
+        max-width: 200px;
+    }
+    
+    .details-content {
+        padding: 30px 20px;
+    }
+    
+    #vip-title {
+        font-size: 2rem;
+    }
+    
+    .details-price {
+        font-size: 2.5rem;
+    }
+    
+    .back-btn {
+        position: relative;
+        left: 0;
+        top: 0;
+        margin-bottom: 20px;
+        display: block;
+        width: fit-content;
+    }
+    
+    #paypal-button-container {
+        margin: 15px 0;
+    }
+
+    /* Discord Section Styles */
+.discord-section {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+}
+
+.discord-link {
+    display: inline-flex;
+    align-items: center;
+    background-color: #5865F2; /* Color oficial de Discord */
+    color: white;
+    text-decoration: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+    font-size: 1.1rem;
+}
+
+.discord-link:hover {
+    background-color: #4752C4; /* Color más oscuro al hacer hover */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(88, 101, 242, 0.4);
+}
+
+.discord-logo {
+    width: 28px;
+    height: 28px;
+    margin-right: 12px;
+    filter: brightness(0) invert(1); /* Hace el logo blanco */
+}
+
+/* Responsive para Discord Section */
+@media (max-width: 768px) {
+    .discord-section {
+        margin-top: 30px;
+        padding: 15px;
+    }
+    
+    .discord-link {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    
+    .discord-logo {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+    }
+
+
+}

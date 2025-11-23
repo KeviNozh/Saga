@@ -7,7 +7,7 @@ const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LK
 const vipConfig = {
     vip: { price: 0.88, name: 'VIP (Básico)' },
     gold: { price: 0.88, name: 'VIP GOLD' },
-    diamond: { price: 0.88, name: 'VIP DIAMOND' }
+    diamond: { price: 0.99, name: 'VIP DIAMOND' }
 };
 
 function initializePayPal(vipType) {
