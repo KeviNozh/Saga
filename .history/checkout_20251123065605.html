@@ -94,14 +94,17 @@
 
     <script src="js/navigation.js"></script>
     <script src="js/script.js"></script>
+    
     <script src="https://www.paypal.com/sdk/js?client-id=AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture&disable-funding=credit,card"></script>
+    
     <script src="js/paypal.js"></script>
     
     <script>
-        // ⚠️ IMPORTANTE: URL para VERIFICACIÓN DE DISCORD
+        // ⚠️ URL de Apps Script desplegado para la VERIFICACIÓN DE DISCORD
         const APPS_SCRIPT_URL_DISCORD = 'https://script.google.com/macros/s/AKfycbzjYY5oMycB4U6FalwJJBUOgRjaoxP5ww2ieGn6wNJeJXlfqsTbxIYyCW9i2ae-67DEAQ/exec';
-
-        // Variables globales
+        // NOTA: EL ENDPOINT DE PAGO ESTÁ EN el archivo paypal.js / config.js
+        
+        // Variables globales (Accedidas por paypal.js)
         let discordVerificado = false;
         let discordDataGuardada = null;
 
@@ -129,8 +132,6 @@
             statusDiv.innerHTML = '<span style="color: orange;">🔍 Buscando en servidor...</span>';
             
             try {
-                console.log('📡 Verificando:', cleanUsername);
-                
                 const response = await fetch(APPS_SCRIPT_URL_DISCORD, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -142,11 +143,11 @@
                 
                 const text = await response.text();
                 let result;
+                
                 try {
                     result = JSON.parse(text);
                 } catch (e) {
-                    console.error('❌ Error parseando:', text);
-                    statusDiv.innerHTML = '<span style="color: red;">⚠️ Error del servidor</span>';
+                    statusDiv.innerHTML = '<span style="color: red;">⚠️ Error del servidor.</span>';
                     discordVerificado = false;
                     return false;
                 }
@@ -168,8 +169,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Error:', error);
-                statusDiv.innerHTML = '<span style="color: red;">⚠️ Error de conexión</span>';
+                statusDiv.innerHTML = '<span style="color: red;">⚠️ Error de conexión.</span>';
                 discordVerificado = false;
                 discordDataGuardada = null;
                 return false;
@@ -183,90 +183,98 @@
             const input = document.getElementById('discord');
             let timeout = null;
             
+            // Cargar estado inicial si el campo está lleno
+            const initialValue = input.value.trim();
+            if (initialValue.length >= 2) {
+                verificarDiscord(initialValue);
+            }
+            
             input.addEventListener('input', function(e) {
                 let value = e.target.value;
+                
+                // Remover # automáticamente
                 if (value.includes('#')) {
                     value = value.split('#')[0];
                     e.target.value = value;
                 }
+                
+                // Limpiar timeout anterior
                 clearTimeout(timeout);
+                
+                // Verificar después de 1.5 segundos de no escribir
                 if (value.length >= 2) {
                     timeout = setTimeout(() => {
                         verificarDiscord(value);
                     }, 1500);
                 } else {
-                    document.getElementById('discord-status').innerHTML = '';
+                    const statusDiv = document.getElementById('discord-status');
+                    statusDiv.innerHTML = '';
                     discordVerificado = false;
                 }
             });
             
+            // Verificar al perder foco
             input.addEventListener('blur', function() {
                 const value = this.value.trim();
                 if (value.length >= 2) {
+                    clearTimeout(timeout); // Asegura que no se ejecute dos veces
                     verificarDiscord(value);
                 }
             });
-            
-            // Verificar si ya hay valor al cargar
-            if (input.value.trim().length >= 2) {
-                verificarDiscord(input.value.trim());
-            }
         }
 
         // ========================================
-        // VALIDAR ANTES DEL PAGO (Conectado a PayPal)
+        // VALIDAR ANTES DEL PAGO (incluye Discord y campos básicos)
         // ========================================
         function validarAntesDePagoCompleto() {
-            // 1. Revisar campos básicos
+            // Revisa campos básicos (Steam ID, Email, Nombre, Términos)
             const steamId = document.getElementById('steam-id').value.trim();
             const email = document.getElementById('email').value.trim();
             const name = document.getElementById('name').value.trim();
             const terms = document.getElementById('terms').checked;
             
             if (!steamId || !email || !name || !terms) {
-                // Dejamos que paypal.js maneje la alerta de campos vacíos
+                showPaymentStatus('⚠️ Completa: Steam ID, Email, Nombre y acepta términos', 'warning');
                 return false;
             }
 
-            // 2. Revisar Discord
+            // --- Verificación de Discord ---
             const currentDiscord = document.getElementById('discord').value.trim();
             
-            // Si cambió el nombre y no se re-verificó
-            if (discordDataGuardada && discordDataGuardada.discordTag.toLowerCase() !== currentDiscord.toLowerCase()) {
-                discordVerificado = false;
-            }
-            
-            if (!discordVerificado || !discordDataGuardada) {
-                const statusDiv = document.getElementById('payment-status');
-                if (statusDiv) {
-                    statusDiv.style.display = 'block';
-                    statusDiv.style.background = 'rgba(255, 0, 0, 0.2)';
-                    statusDiv.style.border = '2px solid #ff0000';
-                    statusDiv.style.color = '#ff0000';
-                    statusDiv.innerHTML = '<strong>❌ Debes verificar tu usuario de Discord primero</strong>';
-                    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+            // 1. Si no está verificado O el nombre del Discord en el campo no coincide con el verificado
+            if (!discordVerificado || !discordDataGuardada || (discordDataGuardada.discordTag.toLowerCase() !== currentDiscord.toLowerCase())) {
+                
+                // Si la validación no se ha hecho, hacemos una verificación síncrona/rápida.
+                if (currentDiscord.length >= 2) {
+                    // Llamamos a la función pero no esperamos el resultado aquí (asumiendo que la verificación en tiempo real fue previa)
+                    verificarDiscord(currentDiscord);
                 }
-                document.getElementById('discord').focus();
-                return false;
+                
+                // 2. Si AÚN no está verificado (o faltan datos), bloqueamos
+                if (!discordVerificado || !discordDataGuardada) {
+                    showPaymentStatus('❌ Primero verifica que tu usuario de Discord esté en el servidor', 'error');
+                    document.getElementById('discord').focus();
+                    return false;
+                }
             }
             
             return true;
         }
 
         // ========================================
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN FINAL
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 Checkout Cargado Correctamente');
+            console.log('📄 Checkout MODIFICADO cargado');
             
-            loadCheckoutSummary();
-            setupDiscordValidation();
+            loadCheckoutSummary(); // Carga datos del VIP seleccionado (de navigation.js)
+            setupDiscordValidation(); // Configura la validación de Discord
             
             const vipType = sessionStorage.getItem('selectedVIP');
             
-            // Aquí conectamos con paypal.js pasándole la función de validación
+            // Llama a la inicialización de paypal.js, pasando la función de validación de Discord
             if (vipType && typeof initializePayPal === 'function') {
-                initializePayPal(vipType, validarAntesDePagoCompleto);
+                initializePayPal(vipType, validarAntesDePagoCompleto); 
             } else if (!vipType) {
                 window.location.href = 'index.html';
             }

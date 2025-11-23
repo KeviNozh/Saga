@@ -98,15 +98,15 @@
     <script src="js/paypal.js"></script>
     
     <script>
-        // ⚠️ IMPORTANTE: URL para VERIFICACIÓN DE DISCORD
+        // ⚠️ URL para VERIFICACIÓN DE DISCORD
         const APPS_SCRIPT_URL_DISCORD = 'https://script.google.com/macros/s/AKfycbzjYY5oMycB4U6FalwJJBUOgRjaoxP5ww2ieGn6wNJeJXlfqsTbxIYyCW9i2ae-67DEAQ/exec';
 
-        // Variables globales
+        // Variables globales para estado de Discord
         let discordVerificado = false;
         let discordDataGuardada = null;
 
         // ========================================
-        // VERIFICAR DISCORD
+        // VERIFICAR DISCORD (Lógica original preservada)
         // ========================================
         async function verificarDiscord(username) {
             const statusDiv = document.getElementById('discord-status');
@@ -129,8 +129,6 @@
             statusDiv.innerHTML = '<span style="color: orange;">🔍 Buscando en servidor...</span>';
             
             try {
-                console.log('📡 Verificando:', cleanUsername);
-                
                 const response = await fetch(APPS_SCRIPT_URL_DISCORD, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -142,11 +140,12 @@
                 
                 const text = await response.text();
                 let result;
+                
                 try {
                     result = JSON.parse(text);
                 } catch (e) {
-                    console.error('❌ Error parseando:', text);
-                    statusDiv.innerHTML = '<span style="color: red;">⚠️ Error del servidor</span>';
+                    console.error('Error parseo:', text);
+                    statusDiv.innerHTML = '<span style="color: red;">⚠️ Error del servidor (JSON)</span>';
                     discordVerificado = false;
                     return false;
                 }
@@ -168,7 +167,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Error:', error);
+                console.error('Error conexión:', error);
                 statusDiv.innerHTML = '<span style="color: red;">⚠️ Error de conexión</span>';
                 discordVerificado = false;
                 discordDataGuardada = null;
@@ -183,6 +182,11 @@
             const input = document.getElementById('discord');
             let timeout = null;
             
+            // Cargar estado inicial si ya hay texto
+            if (input.value.trim().length >= 2) {
+                verificarDiscord(input.value.trim());
+            }
+            
             input.addEventListener('input', function(e) {
                 let value = e.target.value;
                 if (value.includes('#')) {
@@ -191,9 +195,7 @@
                 }
                 clearTimeout(timeout);
                 if (value.length >= 2) {
-                    timeout = setTimeout(() => {
-                        verificarDiscord(value);
-                    }, 1500);
+                    timeout = setTimeout(() => verificarDiscord(value), 1500);
                 } else {
                     document.getElementById('discord-status').innerHTML = '';
                     discordVerificado = false;
@@ -203,39 +205,35 @@
             input.addEventListener('blur', function() {
                 const value = this.value.trim();
                 if (value.length >= 2) {
+                    clearTimeout(timeout);
                     verificarDiscord(value);
                 }
             });
-            
-            // Verificar si ya hay valor al cargar
-            if (input.value.trim().length >= 2) {
-                verificarDiscord(input.value.trim());
-            }
         }
 
         // ========================================
-        // VALIDAR ANTES DEL PAGO (Conectado a PayPal)
+        // VALIDAR TODO ANTES DEL PAGO
         // ========================================
         function validarAntesDePagoCompleto() {
-            // 1. Revisar campos básicos
+            // 1. Validar campos básicos
             const steamId = document.getElementById('steam-id').value.trim();
             const email = document.getElementById('email').value.trim();
             const name = document.getElementById('name').value.trim();
             const terms = document.getElementById('terms').checked;
             
             if (!steamId || !email || !name || !terms) {
-                // Dejamos que paypal.js maneje la alerta de campos vacíos
-                return false;
+                // Dejamos que paypal.js muestre el error de campos vacíos
+                return false; 
             }
 
-            // 2. Revisar Discord
+            // 2. Validar Discord
             const currentDiscord = document.getElementById('discord').value.trim();
             
-            // Si cambió el nombre y no se re-verificó
+            // Si el campo cambió respecto a lo verificado, re-verificar
             if (discordDataGuardada && discordDataGuardada.discordTag.toLowerCase() !== currentDiscord.toLowerCase()) {
                 discordVerificado = false;
             }
-            
+
             if (!discordVerificado || !discordDataGuardada) {
                 const statusDiv = document.getElementById('payment-status');
                 if (statusDiv) {
@@ -244,7 +242,6 @@
                     statusDiv.style.border = '2px solid #ff0000';
                     statusDiv.style.color = '#ff0000';
                     statusDiv.innerHTML = '<strong>❌ Debes verificar tu usuario de Discord primero</strong>';
-                    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
                 }
                 document.getElementById('discord').focus();
                 return false;
@@ -257,15 +254,13 @@
         // INICIALIZACIÓN
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 Checkout Cargado Correctamente');
-            
+            console.log('📄 Checkout Cargado');
             loadCheckoutSummary();
             setupDiscordValidation();
             
             const vipType = sessionStorage.getItem('selectedVIP');
-            
-            // Aquí conectamos con paypal.js pasándole la función de validación
             if (vipType && typeof initializePayPal === 'function') {
+                // Iniciar PayPal pasando la función de validación
                 initializePayPal(vipType, validarAntesDePagoCompleto);
             } else if (!vipType) {
                 window.location.href = 'index.html';
