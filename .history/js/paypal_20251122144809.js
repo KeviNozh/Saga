@@ -1,8 +1,8 @@
-// paypal.js - VERSIÓN CORREGIDA PARA MÓVILES
+// paypal.js - VERSIÓN CORREGIDA Y FUNCIONAL
 let currentVIP = null;
 
-// URL de tu Google Apps Script (LA REAL)
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec';
+// URL de tu Google Apps Script
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwVpdUCehubl8czkR_2otPSoX2gKzcQ7MdcoNg7pnQDMXWWumaNmnTlRVyhnJqPGzimNA/exec';
 
 const vipConfig = {
     vip: { price: 19.99, name: 'VIP' },
@@ -29,30 +29,26 @@ function initializePayPal(vipType) {
     }
 
     // Limpiar contenedor
-    container.innerHTML = '';
+    container.innerHTML = '<div style="text-align:center;padding:10px;color:#fff;">Cargando PayPal...</div>';
 
     console.log('✅ PayPal SDK cargado correctamente');
     console.log('💰 Precio:', price);
-    console.log('📱 User Agent:', navigator.userAgent);
 
-    // CRÍTICO: Configuración específica para móviles
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
+    // Renderizar botón PayPal
     paypal.Buttons({
         style: {
             layout: 'vertical',
             color: 'gold',
             shape: 'rect',
             label: 'paypal',
-            height: isMobile ? 48 : 55, // Altura ajustada para móvil
-            tagline: false // Sin texto adicional en móvil
+            height: 55
         },
 
-        // CRÍTICO: Crear orden con configuración móvil-friendly
+        // Crear orden
         createOrder: function(data, actions) {
             console.log('📝 Creando orden de pago...');
-            console.log('📱 Dispositivo móvil:', isMobile);
             
+            // Validar formulario antes de crear orden
             if (!validateFormSilent()) {
                 alert('⚠️ Por favor completa todos los campos del formulario antes de continuar.');
                 return Promise.reject('Formulario incompleto');
@@ -72,18 +68,11 @@ function initializePayPal(vipType) {
                 application_context: {
                     shipping_preference: 'NO_SHIPPING',
                     brand_name: 'Saga Rust',
-                    user_action: 'PAY_NOW',
-                    // NUEVO: Configuración para móviles
-                    return_url: window.location.href,
-                    cancel_url: window.location.href
+                    user_action: 'PAY_NOW'
                 }
             }).then(function(orderId) {
                 console.log('✅ Orden creada:', orderId);
                 return orderId;
-            }).catch(function(error) {
-                console.error('❌ Error creando orden:', error);
-                alert('Error al crear la orden. Por favor intenta nuevamente.');
-                throw error;
             });
         },
 
@@ -98,7 +87,7 @@ function initializePayPal(vipType) {
             }).catch(function(error) {
                 console.error('❌ Error al capturar:', error);
                 hideLoadingModal();
-                alert('Error al procesar el pago. Por favor contacta soporte con el ID: ' + data.orderID);
+                alert('Error al procesar el pago. Por favor contacta soporte.');
             });
         },
 
@@ -112,20 +101,14 @@ function initializePayPal(vipType) {
         onError: function(err) {
             console.error('❌ ERROR PayPal:', err);
             hideLoadingModal();
-            
-            // Mensaje más específico para móviles
-            if (isMobile) {
-                alert('Error en el proceso de pago.\n\nSi usas un bloqueador de anuncios o navegación privada, desactívalo e intenta nuevamente.');
-            } else {
-                alert('Error en el proceso de pago. Por favor intenta nuevamente o contacta soporte.');
-            }
+            alert('Error en el proceso de pago. Por favor intenta nuevamente o contacta soporte.');
         },
 
-        // CRÍTICO: Validación antes de abrir ventana
+        // Antes de abrir ventana
         onClick: function(data, actions) {
             console.log('🖱️ Click en botón PayPal');
-            console.log('📱 Tipo de dispositivo:', isMobile ? 'Móvil' : 'Desktop');
             
+            // Validar silenciosamente
             if (!validateFormSilent()) {
                 alert('⚠️ Por favor completa:\n- Steam ID\n- Email\n- Nombre\n- Acepta términos y condiciones');
                 return actions.reject();
@@ -137,17 +120,11 @@ function initializePayPal(vipType) {
     }).render('#paypal-button-container')
       .then(function() {
           console.log('✅ Botón PayPal renderizado correctamente');
-          console.log('📱 Modo:', isMobile ? 'MÓVIL' : 'DESKTOP');
           container.style.minHeight = 'auto';
       })
       .catch(function(error) {
           console.error('❌ Error al renderizar botón:', error);
-          container.innerHTML = `
-            <div style="color:red;padding:15px;background:rgba(255,0,0,0.1);border-radius:8px;margin:10px 0;">
-              <strong>⚠️ Error al cargar PayPal</strong><br><br>
-              ${isMobile ? 'Intenta desactivar el bloqueador de anuncios o usa otro navegador.' : 'Por favor recarga la página.'}
-            </div>
-          `;
+          container.innerHTML = '<div style="color:red;padding:10px;">Error al cargar PayPal. Recarga la página.</div>';
       });
 }
 
@@ -169,6 +146,32 @@ function validateFormSilent() {
     }
 
     console.log('✅ Validación exitosa');
+    saveFormData();
+    return true;
+}
+
+// Validación con alertas
+function validateForm() {
+    const steamId = document.getElementById('steam-id').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const terms = document.getElementById('terms').checked;
+
+    if (!steamId || !email || !name) {
+        alert('❌ Por favor completa todos los campos obligatorios:\n- Steam ID\n- Email\n- Nombre');
+        return false;
+    }
+
+    if (!validateEmail(email)) {
+        alert('❌ El email ingresado no es válido.\nEjemplo: usuario@email.com');
+        return false;
+    }
+
+    if (!terms) {
+        alert('❌ Debes aceptar los términos y condiciones para continuar.');
+        return false;
+    }
+
     saveFormData();
     return true;
 }
@@ -274,6 +277,7 @@ function showCustomConfirmation(paymentData) {
             <p style="margin: 8px 0;"><strong>Email:</strong> ${paymentData.email}</p>
             <p style="margin: 8px 0;"><strong>Transacción:</strong> ${paymentData.transactionId}</p>
             <p style="margin: 8px 0;"><strong>Monto:</strong> $${paymentData.amount} USD</p>
+            <p style="margin: 8px 0;"><strong>Fecha:</strong> ${paymentData.fechaLocal}</p>
         </div>
         
         <div style="background: linear-gradient(135deg, #43a047, #66bb6a); padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 4px 15px rgba(67,160,71,0.3);">
@@ -285,9 +289,18 @@ function showCustomConfirmation(paymentData) {
             </p>
         </div>
         
-        <button class="btn" onclick="closeModal()" style="background: var(--gold); width: 100%; margin-top: 10px;">
-            Entendido
-        </button>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn" onclick="closeModal()" style="background: var(--gold); flex: 1;">
+                Entendido
+            </button>
+            <button class="btn" onclick="exportLastPayment()" style="background: #4CAF50; flex: 1;">
+                📄 Exportar Recibo
+            </button>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 0.9rem; color: #aaa;">
+            Guarda esta información para cualquier consulta
+        </p>
     `;
     
     modal.classList.add('active');
@@ -334,7 +347,7 @@ function showLoadingModal() {
 }
 
 function hideLoadingModal() {
-    // No cerramos el modal, solo lo reutilizamos
+    // No cerramos el modal, solo lo reutilizamos para mostrar confirmación
 }
 
 function exportLastPayment() {
@@ -345,6 +358,8 @@ function exportLastPayment() {
     }
     
     const lastPayment = payments[payments.length - 1];
+    
+    // Crear texto legible
     const receiptText = `
 ═══════════════════════════════════════
         SAGA RUST - RECIBO DE COMPRA
@@ -385,31 +400,35 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('%c🎮 SAGA RUST VIP SYSTEM', 'background: #d85c3a; color: white; font-size: 20px; padding: 10px;');
     console.log('✅ Sistema iniciado correctamente');
     console.log('📊 Backend:', BACKEND_URL);
-    console.log('📱 Dispositivo:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'MÓVIL' : 'DESKTOP');
     
     // Cargar datos guardados
     const savedData = localStorage.getItem('sagaRustFormData');
     if (savedData) {
         const data = JSON.parse(savedData);
-        if (document.getElementById('steam-id')) {
-            document.getElementById('steam-id').value = data.steamId || '';
-            document.getElementById('email').value = data.email || '';
-            document.getElementById('name').value = data.name || '';
-            document.getElementById('discord').value = data.discord || '';
-            console.log('📝 Datos del formulario restaurados');
-        }
+        document.getElementById('steam-id').value = data.steamId || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('discord').value = data.discord || '';
+        console.log('📝 Datos del formulario restaurados');
     }
     
     const paymentsCount = JSON.parse(localStorage.getItem('sagaRustPayments') || '[]').length;
     console.log('💾 Pagos registrados:', paymentsCount);
+    
+    console.log('\n🔧 COMANDOS DE CONSOLA:');
+    console.log('- showAllPayments() : Ver todos los pagos');
+    console.log('- exportLastPayment() : Exportar último recibo');
+    console.log('- clearAllData() : Limpiar datos (dev only)');
 });
 
+// Función para ver todos los pagos (admin)
 function showAllPayments() {
     const payments = JSON.parse(localStorage.getItem('sagaRustPayments') || '[]');
     console.table(payments);
     return payments;
 }
 
+// Función para limpiar datos (solo desarrollo)
 function clearAllData() {
     if (confirm('⚠️ ¿Estás seguro de eliminar TODOS los datos guardados?')) {
         localStorage.removeItem('sagaRustPayments');
