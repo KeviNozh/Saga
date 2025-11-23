@@ -3,11 +3,11 @@ let currentVIP = null;
 // ✅ URL de tu Google Apps Script
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec';
 
-// ✅ Configuración de precios ($0.10 USD)
+// ✅ Configuración de precios (TODOS A $0.99 PARA PRUEBAS)
 const vipConfig = {
-    vip: { price: 0.10, name: 'VIP (Básico)' },
-    gold: { price: 0.10, name: 'VIP GOLD' },
-    diamond: { price: 0.10, name: 'VIP DIAMOND' }
+    vip: { price: 0.00, name: 'VIP (Básico)' },
+    gold: { price: 0.00, name: 'VIP GOLD' },
+    diamond: { price: 0.00, name: 'VIP DIAMOND' }
 };
 
 function initializePayPal(vipType) {
@@ -17,7 +17,6 @@ function initializePayPal(vipType) {
     
     if (!config) {
         console.error('❌ Tipo VIP no válido:', vipType);
-        showPaymentStatus('Error: Tipo de VIP no válido', 'error');
         return;
     }
     
@@ -35,8 +34,8 @@ function initializePayPal(vipType) {
         return;
     }
 
-    container.innerHTML = '<p style="text-align:center;color:#aaa;">Cargando PayPal...</p>';
-    console.log('✅ PayPal SDK LIVE cargado - Precio: $' + price.toFixed(2));
+    container.innerHTML = '';
+    console.log('✅ PayPal SDK PRODUCCIÓN cargado - Precio: $' + price);
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
@@ -51,10 +50,10 @@ function initializePayPal(vipType) {
         },
 
         createOrder: function(data, actions) {
-            console.log('📝 Creando orden de pago REAL - $' + price.toFixed(2));
+            console.log('📝 Creando orden de pago REAL...');
             
             if (!validateFormSilent()) {
-                showPaymentStatus('⚠️ Completa todos los campos obligatorios', 'warning');
+                showPaymentStatus('Completa todos los campos obligatorios', 'warning');
                 return Promise.reject(new Error('Formulario incompleto'));
             }
             
@@ -77,10 +76,6 @@ function initializePayPal(vipType) {
             }).then(function(orderId) {
                 console.log('✅ Orden REAL creada:', orderId);
                 return orderId;
-            }).catch(function(error) {
-                console.error('❌ Error al crear orden:', error);
-                showPaymentStatus('Error al crear la orden. Intenta nuevamente.', 'error');
-                throw error;
             });
         },
 
@@ -94,29 +89,29 @@ function initializePayPal(vipType) {
                 if (details.status === 'COMPLETED') {
                     return processSuccessfulPayment(details, vipType);
                 } else {
-                    throw new Error('Estado de pago: ' + details.status);
+                    throw new Error('Estado: ' + details.status);
                 }
             }).catch(function(error) {
-                console.error('❌ Error al capturar:', error);
+                console.error('❌ Error:', error);
                 hideLoadingModal();
-                showPaymentStatus('Error al procesar pago. ID: ' + data.orderID, 'error');
+                showPaymentStatus('Error al procesar. Contacta soporte: ' + data.orderID, 'error');
             });
         },
 
         onCancel: function(data) {
-            console.log('❌ Pago cancelado por el usuario');
+            console.log('❌ Pago cancelado');
             showPaymentStatus('Pago cancelado. Puedes intentar de nuevo.', 'warning');
         },
 
         onError: function(err) {
             console.error('❌ ERROR PayPal:', err);
             hideLoadingModal();
-            showPaymentStatus('Error en el sistema de pago. Intenta de nuevo.', 'error');
+            showPaymentStatus('Error en el pago. Intenta de nuevo.', 'error');
         },
 
         onClick: function(data, actions) {
             if (!validateFormSilent()) {
-                showPaymentStatus('⚠️ Completa: Steam ID, Email, Nombre y acepta términos', 'warning');
+                showPaymentStatus('Completa: Steam ID, Email, Nombre y acepta términos', 'warning');
                 return actions.reject();
             }
             hidePaymentStatus();
@@ -125,17 +120,11 @@ function initializePayPal(vipType) {
 
     }).render('#paypal-button-container')
       .then(function() {
-          console.log('✅ Botón PayPal LIVE renderizado - $0.10');
+          console.log('✅ Botón PayPal PRODUCCIÓN renderizado');
       })
       .catch(function(error) {
-          console.error('❌ Error al renderizar botón:', error);
-          container.innerHTML = `
-              <div style="color:#ff6b6b;padding:20px;text-align:center;background:rgba(255,0,0,0.1);border-radius:8px;">
-                  <p><strong>⚠️ Error al cargar PayPal</strong></p>
-                  <p style="font-size:0.9rem;margin:10px 0;">Verifica tu conexión a internet</p>
-                  <button onclick="location.reload()" class="btn" style="margin-top:10px;padding:10px 20px;">Recargar Página</button>
-              </div>
-          `;
+          console.error('❌ Error render:', error);
+          container.innerHTML = '<div style="color:#ff6b6b;padding:20px;text-align:center;">Error al cargar PayPal. <button onclick="location.reload()" class="btn">Recargar</button></div>';
       });
 }
 
@@ -160,7 +149,6 @@ function saveFormData() {
         timestamp: new Date().toISOString()
     };
     localStorage.setItem('sagaRustFormData', JSON.stringify(formData));
-    console.log('💾 Datos del formulario guardados');
 }
 
 async function processSuccessfulPayment(details, vipType) {
@@ -185,11 +173,10 @@ async function processSuccessfulPayment(details, vipType) {
         fechaLocal: new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago', dateStyle: 'full', timeStyle: 'long' })
     };
 
-    console.log('💰 PAGO REAL REGISTRADO - $0.10:', paymentData);
+    console.log('💰 PAGO REAL REGISTRADO:', paymentData);
     savePaymentToHistory(paymentData);
 
     try {
-        console.log('📤 Enviando datos al servidor...');
         await fetch(BACKEND_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -198,7 +185,7 @@ async function processSuccessfulPayment(details, vipType) {
         });
         console.log('✅ Datos enviados al servidor');
     } catch (error) {
-        console.error('⚠️ Error al enviar datos:', error);
+        console.error('⚠️ Error envío:', error);
     }
 
     hideLoadingModal();
@@ -210,7 +197,6 @@ function savePaymentToHistory(data) {
     let history = JSON.parse(localStorage.getItem('sagaRustPayments') || '[]');
     history.push(data);
     localStorage.setItem('sagaRustPayments', JSON.stringify(history));
-    console.log('📝 Pago guardado en historial local');
 }
 
 function showCustomConfirmation(p) {
@@ -234,7 +220,7 @@ function showCustomConfirmation(p) {
                 ⚡ VIP activo en <strong>24 horas</strong>
             </p>
         </div>
-        <button class="btn" onclick="closeModal()" style="background:var(--gold);width:100%;padding:15px;">Entendido</button>
+        <button class="btn" onclick="closeModal()" style="background:var(--gold);width:100%;">Entendido</button>
     `;
     modal.classList.add('active');
 }
@@ -245,9 +231,9 @@ function showLoadingModal() {
     content.innerHTML = `
         <div style="text-align:center;">
             <div class="spinner"></div>
-            <h2 style="color:var(--gold);margin:20px 0;">Procesando Pago...</h2>
+            <h2 style="color:var(--gold);margin:20px 0;">Procesando Pago REAL...</h2>
             <p>Espera mientras confirmamos con PayPal</p>
-            <p style="color:#aaa;margin-top:20px;font-size:0.9rem;">⚠️ No cierres esta ventana</p>
+            <p style="color:#aaa;margin-top:20px;">No cierres esta ventana</p>
         </div>
     `;
     modal.classList.add('active');
@@ -255,20 +241,7 @@ function showLoadingModal() {
     if (!document.getElementById('spinner-style')) {
         const style = document.createElement('style');
         style.id = 'spinner-style';
-        style.textContent = `
-            .spinner {
-                border: 5px solid rgba(255,140,0,0.2);
-                border-top: 5px solid var(--gold);
-                border-radius: 50%;
-                width: 80px;
-                height: 80px;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 30px;
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        `;
+        style.textContent = `.spinner{border:5px solid rgba(255,140,0,0.2);border-top:5px solid var(--gold);border-radius:50%;width:80px;height:80px;animation:spin 1s linear infinite;margin:0 auto 30px;}@keyframes spin{to{transform:rotate(360deg);}}`;
         document.head.appendChild(style);
     }
 }
@@ -278,25 +251,12 @@ function hideLoadingModal() {}
 function showPaymentStatus(msg, type) {
     const el = document.getElementById('payment-status');
     if (!el) return;
-    
-    const colors = { 
-        error: '#ff6b6b', 
-        warning: '#ffa500', 
-        success: '#4CAF50' 
-    };
-    
+    const colors = { error: '#ff6b6b', warning: '#ffa500', success: '#4CAF50' };
     el.style.display = 'block';
-    el.style.background = `rgba(${type === 'error' ? '255,107,107' : type === 'warning' ? '255,165,0' : '76,175,80'},0.2)`;
-    el.style.border = `2px solid ${colors[type]}`;
+    el.style.background = `rgba(${type === 'error' ? '255,0,0' : type === 'warning' ? '255,165,0' : '0,255,0'},0.1)`;
+    el.style.borderLeft = `4px solid ${colors[type]}`;
     el.style.color = '#fff';
-    el.style.padding = '15px';
-    el.style.borderRadius = '8px';
-    el.style.marginTop = '15px';
-    el.innerHTML = `<strong>${msg}</strong>`;
-    
-    if (type === 'warning') {
-        setTimeout(() => hidePaymentStatus(), 5000);
-    }
+    el.innerHTML = msg;
 }
 
 function hidePaymentStatus() {
@@ -304,6 +264,4 @@ function hidePaymentStatus() {
     if (el) el.style.display = 'none';
 }
 
-console.log('✅ paypal.js PRODUCCIÓN cargado');
-console.log('💳 Client ID: AUNiQWQ... (LIVE)');
-console.log('💰 Precio: $0.10 USD');
+console.log('✅ paypal.js PRODUCCIÓN cargado - sagarustpagos@gmail.com - Precios: $0.99');

@@ -58,7 +58,7 @@
                     </div>
                     <div class="summary-item">
                         <span>Precio:</span>
-                        <span id="summary-price">$0.10</span>
+                        <span id="summary-price">$0.00</span>
                     </div>
                     <div class="summary-item">
                         <span>Impuestos:</span>
@@ -67,7 +67,7 @@
                     <div class="summary-divider"></div>
                     <div class="summary-item summary-total">
                         <span>Total:</span>
-                        <span id="summary-total">$0.10</span>
+                        <span id="summary-total">$0.00</span>
                     </div>
 
                     <!-- Contenedor PayPal -->
@@ -99,43 +99,40 @@
     <script src="js/navigation.js"></script>
     <script src="js/script.js"></script>
     
-    <!-- ✅ PayPal SDK PRODUCCIÓN - Client ID LIVE -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture&disable-funding=credit,card"></script>
+    <!-- ✅ PayPal SDK - PRODUCCIÓN - sagarustpagos@gmail.com -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture"></script>
     <script src="js/paypal.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 Checkout PRODUCCIÓN - $0.10 USD');
+            console.log('📄 Página de checkout cargada - MODO PRODUCCIÓN');
             loadCheckoutSummary();
             
-            let intentos = 0;
-            const maxIntentos = 50;
-            
             const checkPayPal = setInterval(() => {
-                intentos++;
-                
                 if (typeof paypal !== 'undefined') {
                     clearInterval(checkPayPal);
                     const vipType = sessionStorage.getItem('selectedVIP');
-                    
                     if (vipType) {
-                        console.log('✅ PayPal SDK LIVE listo:', vipType);
+                        console.log('✅ PayPal SDK listo (PRODUCCIÓN):', vipType);
                         initializePayPal(vipType);
                     } else {
                         console.warn('⚠️ No hay VIP seleccionado');
                         window.location.href = 'index.html';
                     }
-                } else if (intentos >= maxIntentos) {
-                    clearInterval(checkPayPal);
+                }
+            }, 100);
+            
+            setTimeout(() => {
+                if (typeof paypal === 'undefined') {
                     document.getElementById('paypal-button-container').innerHTML = `
                         <div style="color: #ff6b6b; padding: 20px; background: rgba(255,0,0,0.1); border-radius: 8px; text-align: center;">
                             <p><strong>⚠️ Error al cargar PayPal</strong></p>
-                            <p>Verifica tu conexión a internet</p>
-                            <button onclick="location.reload()" class="btn" style="margin-top: 10px;">Recargar Página</button>
+                            <p>Por favor recarga la página o verifica tu conexión</p>
+                            <button onclick="location.reload()" class="btn" style="margin-top: 10px;">Recargar</button>
                         </div>
                     `;
                 }
-            }, 100);
+            }, 10000);
         });
     </script>
 </body>

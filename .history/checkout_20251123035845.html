@@ -99,15 +99,16 @@
     <script src="js/navigation.js"></script>
     <script src="js/script.js"></script>
     
-    <!-- ✅ PayPal SDK PRODUCCIÓN - Client ID LIVE -->
+    <!-- ✅ PayPal SDK LIVE -->
     <script src="https://www.paypal.com/sdk/js?client-id=AUNiQWQRZnSr3KohXOJHkmI3NuV8bUl7nJWD5vOhvcVjLA-e8RQAPOh1E_fWORBaha2_pZNsG4dmO-P5&currency=USD&intent=capture&disable-funding=credit,card"></script>
     <script src="js/paypal.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 Checkout PRODUCCIÓN - $0.10 USD');
+            console.log('📄 Checkout cargado - PRODUCCIÓN');
             loadCheckoutSummary();
             
+            // Esperar a que PayPal SDK cargue
             let intentos = 0;
             const maxIntentos = 50;
             
@@ -119,7 +120,7 @@
                     const vipType = sessionStorage.getItem('selectedVIP');
                     
                     if (vipType) {
-                        console.log('✅ PayPal SDK LIVE listo:', vipType);
+                        console.log('✅ PayPal SDK listo:', vipType);
                         initializePayPal(vipType);
                     } else {
                         console.warn('⚠️ No hay VIP seleccionado');
