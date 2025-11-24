@@ -1,7 +1,7 @@
 // Configuración de la aplicación - PRODUCCIÓN
 const CONFIG = {
     paypal: {
-        clientId: 'AZAflCZaZ4xvrrfGJ9chFDHJ-V_dNH8Xju8lkVOPe2caCrzLosdcTqLvGqMVD665JhYkeb6jalWtRNI9',
+        clientId: 'Ae4y8pskNsADzerR0UEcN5WccZnZpzNGUwdMYG-IubRQqYqhQnW37l36trhr4nZ9Zv9PFYXdxTfh4a9p',
         currency: 'USD',
         environment: 'production'
     },
