@@ -3,7 +3,7 @@ const CONFIG = {
     paypal: {
         clientId: 'AUBjE73ieu_WgG0qIiWCpU7V5IamTkX8bY9xfo80i2xrKJheuDE9ZFCVp_otxw93jibFxNnqGiMLv6Ja',
         currency: 'USD',
-        environment: 'sandbox'
+        environment: 'standbox'
     },
     server: {
         endpoint: 'https://script.google.com/macros/s/AKfycbyqSQq11hdeTdeoV2LKK6TKcnjFgqEkDLwOqKc9iNjA7XNU5QxO8XICGfSwdEjYlncDpA/exec'
